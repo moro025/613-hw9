@@ -1,0 +1,58 @@
+---
+title: "613 hw9"
+author: "Cihui Yang"
+date: "2021/4/10"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidycensus)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+
+census_api_key("42f1de8c7e6161facaf5889926b6659f0418b101")
+install = TRUE
+
+v15 <- load_variables(2015, "acs5", cache = TRUE)
+View(v15)
+
+#2a
+ca <- get_acs(geography = "county", 
+              variables = c(medincome = "B01001A_011"), 
+              state = 06, 
+              year = 2015)
+
+ca
+
+#2b
+ca2<-ca %>%
+  filter(estimate>3000)%>%
+  arrange(desc(estimate))
+ca2
+
+#2c
+ca2%>%
+  filter(estimate==51644, moe==667)
+
+#2d
+ggplot(data = ca2) +
+  geom_boxplot(mapping = aes(x=estimate), fill="red")
+
+#2e
+ca2 %>%
+  mutate(NAME = gsub(" County, California", "", NAME)) %>%
+  ggplot(aes(x = estimate, y = reorder(NAME, estimate))) +
+  geom_errorbarh(aes(xmin = estimate - moe, xmax = estimate + moe)) +
+  geom_point(color = "blue", size = 3) +
+  labs(title = "Household income by county in Vermont",
+       subtitle = "2014-2018 American Community Survey",
+       y = "",
+       x = "ACS estimate (bars represent margin of error)")
+
+```
+
